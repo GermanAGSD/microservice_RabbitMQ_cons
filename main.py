@@ -10,6 +10,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 from faststream.rabbit import RabbitBroker
 from aiogram.types import Message
+
 # Bot token can be obtained via https://t.me/BotFather
 
 
@@ -20,14 +21,17 @@ bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 # All handlers should be attached to the Router (or Dispatcher)
 
 dp = Dispatcher()
+CHAT_ID = 2037339309
 
 
 @broker.subscriber("orders")
 async def handle_orders_and_message(data: str):
-    await bot.send_message(
-        chat_id=2037339309,
-        text=data
-    )
+    await bot.send_message(CHAT_ID, text=data)
+
+@broker.subscriber("product")
+async def on_product(data: str):
+    await bot.send_message(CHAT_ID, text=data)
+
 # Узнать id chat room
 # @dp.message()
 # async def handle_message(msg: Message):
