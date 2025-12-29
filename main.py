@@ -12,6 +12,7 @@ from faststream.rabbit import RabbitBroker
 from aiogram.types import Message
 from pydantic import BaseModel
 from utils import get_ip
+from utils import read_memory
 # Bot token can be obtained via https://t.me/BotFather
 
 
@@ -37,10 +38,15 @@ async def handle_orders_and_message(msg: JsonMessage):
     payload = msg.model_dump_json()
 
     match msg.event:
-        case "send_ip":
+        case "ip":
             ip =get_ip()
+            memory = read_memory()
             logging.info(f"ip address отправлен на сервер {ip}")
             msg.message = ip  # кладём IP в поле message
+            await bot.send_message(CHAT_ID, text=msg.model_dump_json(indent=3))
+        case "memory":
+            memory = read_memory()
+            msg.message = memory  # кладём IP в поле message
             await bot.send_message(CHAT_ID, text=msg.model_dump_json(indent=3))
         case _:
             logging.error("Неизвестный тип данных")
