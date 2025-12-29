@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from utils import get_ip
 from utils import read_memory
 # Bot token can be obtained via https://t.me/BotFather
-
+from typing import Any
 
 broker = RabbitBroker("amqp://admin:admin123@172.30.30.19:5672/")
 TOKEN = "7975223905:AAGRlxuXhOU1OjvMyNnYdpRqJq08qC5OLig"
@@ -26,21 +26,19 @@ dp = Dispatcher()
 CHAT_ID = 2037339309
 
 class JsonMessage(BaseModel):
-    id: int
+    id: str
     event: str
-    message: str
+    message: Any = None            # теперь может быть dict/str/что угодно
 
 
 
 
 @broker.subscriber("orders")
 async def handle_orders_and_message(msg: JsonMessage):
-    payload = msg.model_dump_json()
 
     match msg.event:
         case "ip":
             ip =get_ip()
-            memory = read_memory()
             logging.info(f"ip address отправлен на сервер {ip}")
             msg.message = ip  # кладём IP в поле message
             await bot.send_message(CHAT_ID, text=msg.model_dump_json(indent=3))
@@ -49,6 +47,7 @@ async def handle_orders_and_message(msg: JsonMessage):
             msg.message = memory  # кладём IP в поле message
             await bot.send_message(CHAT_ID, text=msg.model_dump_json(indent=3))
         case _:
+            await bot.send_message(CHAT_ID, text=msg.model_dump_json(indent=3))
             logging.error("Неизвестный тип данных")
 
     # print(payload)
